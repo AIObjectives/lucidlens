@@ -56,8 +56,8 @@ headlines.forEach(async (headline) => {
     },
     body: JSON.stringify({
       model: "text-davinci-003",
-      prompt: `Give me an objective, neutral, factual three sentence summary for the article content below.\n\nArticle: "${mainText}"`,
-      max_tokens: 30
+      prompt: `Be as concise as possible and try to limit your answer to three or fewer sentences. Give me an objective, neutral, factual summary for the article content below.\n\nArticle: "${mainText}"`,
+      max_tokens: 200
     })
   });
 
@@ -68,4 +68,7 @@ headlines.forEach(async (headline) => {
 
   // Replace the old headline with the new one
   headline.textContent = generatedHeadline;
+  
+  // Remove all-caps headlines, just easier to read with summaries.
+  headline.style.textTransform = 'none';
 });
