@@ -8,6 +8,9 @@
         "ecmaVersion": "latest",
         "sourceType": "module"
     },
-    "rules": {
+    "rules": {},
+    "globals": {
+        "chrome": "writable",
+        "chrome.storage": "writable"
     }
 }
