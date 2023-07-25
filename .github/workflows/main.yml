@@ -4,6 +4,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+    - name: Install ESLint
+      run: |
+        npm install eslint
+        npm install @microsoft/eslint-formatter-sarif
     - name: Run ESLint
-      run: eslint . --ext .js,.jsx,.ts,.tsx
+      run: npx eslint .
+        --config .eslintrc.json
+        --ext .js,.jsx,.ts,.tsx
+      continue-on-error: false
