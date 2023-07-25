@@ -1,15 +1,28 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Lucid Lens Options</title>
 </head>
+
 <body>
   <h1>Lucid Lens Options</h1>
-  <label for="apiKey">OpenAI API Key:</label>
-  <input type="text" id="apiKey" style="width: 64ch;">
-  <button id="saveKey">Save</button>
+  <!-- TODO Really, any formatting at all would be nice here. -->
+  <p>
+    <label for="apiKey">OpenAI API Key:</label>
+    <input type="text" id="apiKey" style="width: 64ch;">
+  </p>
+  <p>
+    <label for="prompt">Prompt:</label>
+    <input type="text" id="prompt" style="width: 64ch;"
+      value='Give me an objective, neutral, factual new headline for the article content below.'>
+  </p>
+  <p>
+    <button id="saveOptions">Save</button>
+  </p>
   <p id="successMessage"></p>
 
   <script src="options.js"></script>
 </body>
+
 </html>

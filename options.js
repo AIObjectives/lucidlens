@@ -1,31 +1,44 @@
 document.addEventListener('DOMContentLoaded', function () {
     const apiKeyInput = document.getElementById('apiKey');
-    const saveButton = document.getElementById('saveKey');
+    const promptInput = document.getElementById('prompt');
+    const saveButton = document.getElementById('saveOptions');
 
-    // Load the saved API key when the options page is opened
+    // Load the saved options when the options page is opened
     chrome.storage.local.get('apiKey', function (data) {
         if (data.apiKey) {
             apiKeyInput.value = data.apiKey;
         }
     });
+    chrome.storage.local.get('prompt', function (data) {
+        if (data.prompt) {
+            promptInput.value = data.prompt;
+        }
+    });
 
     saveButton.addEventListener('click', function () {
-        const apiKey = apiKeyInput.value;
-
+        const apiKey = apiKeyInput.value;        
         chrome.storage.local.set({ apiKey }, function () {
             console.log('API key saved successfully.');
-
-            // Show success message
-            const successMessage = document.getElementById('successMessage');
-            successMessage.textContent = 'API key saved successfully.';
-            successMessage.style.color = 'green';
-            successMessage.style.display = 'block';
-
-            // Clear the success message after 3 seconds
-            setTimeout(function () {
-                successMessage.textContent = '';
-                successMessage.style.display = 'none';
-            }, 3000);
         });
+
+        const prompt = promptInput.value;
+        chrome.storage.local.set({ prompt }, function () {
+            console.log('Prompt saved successfully.');
+        });
+
+        // A little sketchy here showing the success message when one of the saves could have failed.
+        // But, it's probably fine.
+
+        // Show success message
+        const successMessage = document.getElementById('successMessage');
+        successMessage.textContent = 'Options saved successfully.';
+        successMessage.style.color = 'green';
+        successMessage.style.display = 'block';
+
+        // Clear the success message after 3 seconds
+        setTimeout(function () {
+            successMessage.textContent = '';
+            successMessage.style.display = 'none';
+        }, 3000);
     });
 });

@@ -10,12 +10,31 @@ function getAPIKey() {
   });
 }
 
-getAPIKey().then(apiKey => {
+function getPrompt() {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.get('prompt', (result) => {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      } else {
+        resolve(result.prompt);
+      }
+    });
+  });
+}
+
+Promise.all([getAPIKey(), getPrompt()]).then(([apiKey, prompt]) => {
 
   if (apiKey === undefined) {
     console.warn('%cLucid Lens: Please set the Open API key in the options.', 'color: red; font-weight: bold;');
     return;
   }
+
+  if (prompt === undefined) {
+    console.warn('%cLucid Lens: Please set the Prompt in the options.', 'color: red; font-weight: bold;');
+    return;
+  }
+
+  console.log('%cLucid Lens: Successfully loaded options.', 'color: green; font-weight: bold;');
 
   // Get the hostname of the current site
   let hostname = window.location.hostname;
@@ -62,7 +81,7 @@ getAPIKey().then(apiKey => {
     // Extract the main article text
     const mainText = article.textContent;
 
-  console.log("For previous headling " + headline + ", using main text: " + mainText)
+    // console.log("For previous headling " + headline + ", using main text: " + mainText)
 
     // Generate a new headline with OpenAI API
     // TODO Completions is a bit outdated, as is text-davinci-003, but probably replacing this with Web LLM soon anyway?
@@ -74,7 +93,7 @@ getAPIKey().then(apiKey => {
       },
       body: JSON.stringify({
         model: "text-davinci-003",
-        prompt: `Be as concise as possible and try to limit your answer to three or fewer sentences. Give me an objective, neutral, factual summary for the article content below.\n\nArticle: "${mainText}"`,
+        prompt: prompt + `\n\nArticle: "${mainText}"`,
         max_tokens: 200
       })
     });
