@@ -88,5 +88,6 @@ getAPIKey().then(apiKey => {
     headline.textContent = generatedHeadline;
 
     // Remove all-caps headlines, just easier to read with summaries.
-  headline.style.textTransform = 'none';
+    headline.style.cssText = 'text-transform: none !important;'; // TODO Still doesn't really work.
+  });
 });
