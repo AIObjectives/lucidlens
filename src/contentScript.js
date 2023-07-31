@@ -8,6 +8,8 @@ const axios = setupCache(Axios, {
   methods: ['get', 'post'] // We want to add 'post' for the OpenAI API
 });
 
+import { htmlToText } from 'html-to-text';
+
 function getAPIKey() {
   return new Promise((resolve, reject) => {
     chrome.storage.local.get('apiKey', (result) => {
@@ -73,6 +75,7 @@ Promise.all([getAPIKey(), getPrompt()]).then(([apiKey, prompt]) => {
   // Loop through each headline
   headlines.forEach(async (headline) => {
 
+    // TODO Need better heuristics for things that are matched by selectors but are not actually headlines. Or need deselectors like adblockers?
     if (headline.textContent.length < 50) {
       console.log("Too short, excluded: " + headline)
       return;
@@ -87,12 +90,21 @@ Promise.all([getAPIKey(), getPrompt()]).then(([apiKey, prompt]) => {
     const doc = parser.parseFromString(htmlText, 'text/html');
 
     // Get the article element
-    const article = doc.querySelector('article');
+    // TODO This isn't always present, probably need a set of heuristics to find the main content.
+    const articleElement = doc.querySelector('article');
 
     var mainText = "";
-    if (Object.prototype.hasOwnProperty.call(article, 'textContent')) {
+    if (articleElement !== undefined) {
       // Extract the main article text
-      mainText = article.textContent;
+      const articleText = htmlToText(articleElement.innerHTML)
+      // TODO Choosing the beginning and end of the article if it's too long is a decision choice, but probably still enough context?
+      const contextWindowMax = 3000; // It's 4096 for the current model but let's leave lots of room for the prompt.
+      mainText = articleText;
+      if (articleText.length > contextWindowMax) {
+        mainText = articleText.substring(0, contextWindowMax / 2) + " ... " + articleText.substring(articleText.length - contextWindowMax / 2, articleText.length);
+        console.log(`For headline "${headline.textContent}", trimmed article to ${contextWindowMax} characters.`);
+      }
+      // console.log(article);
     } else {
       console.log(`No textContent found for headline "${headline.textContent}" at ${headline.href}, rewriting without article content.`);
       mainText = headline.textContent; // This is a bit of a design choice, but I think it's better than nothing..
@@ -111,7 +123,7 @@ Promise.all([getAPIKey(), getPrompt()]).then(([apiKey, prompt]) => {
     };
     // We could potentially do this concurrently but I'm mildly worried about rate limiting and don't have explicit backoff/retry logic.
     await axios.post('https://api.openai.com/v1/completions', postData, { headers: headers })
-      .then((response) => {      
+      .then((response) => {
         const generatedHeadline = response.data.choices[0].text.trim().replace(/(\r\n|\n|\r)/gm, ""); // Sometimes you get linebreaks back.
         // console.log(`Post: ${postData.prompt}\nReponse: ${generatedHeadline}`);
         console.log((response.cached ? "CACHED: " : "GENERATED: ") + generatedHeadline);
