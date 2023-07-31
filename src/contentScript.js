@@ -1,3 +1,13 @@
+import Axios from 'axios'; // Using this so we can use axios-cache-interceptor, other caching options were less appealing.
+import { setupCache, buildWebStorage } from 'axios-cache-interceptor';
+// same object, but with updated typings.
+// FYI for when you need it: https://axios-cache-interceptor.js.org/config#debug
+const axios = setupCache(Axios, {
+  storage: buildWebStorage(localStorage, 'lucidlens-axios-cache:'), // Default is in-memory, which doesn't survive reloads.
+  interpretHeader: false, // Have to ignore the return header https://stackoverflow.com/questions/75082152/puzzle-about-using-axios-cache-interceptor
+  methods: ['get', 'post'] // We want to add 'post' for the OpenAI API
+});
+
 function getAPIKey() {
   return new Promise((resolve, reject) => {
     chrome.storage.local.get('apiKey', (result) => {
@@ -53,7 +63,8 @@ Promise.all([getAPIKey(), getPrompt()]).then(([apiKey, prompt]) => {
       break;
     // Add more cases as needed...
     default:
-      throw new Error(`No selector defined for hostname: ${hostname}`);
+      console.log(`No selector defined for hostname: ${hostname}`);
+      return;
   }
 
   // Now use the selected rule to get the headlines
@@ -68,7 +79,7 @@ Promise.all([getAPIKey(), getPrompt()]).then(([apiKey, prompt]) => {
     }
 
     // Fetch the linked article content
-    let response = await fetch(headline.href);
+    let response = await fetch(headline.href); // TODO We should probably cache these too but they're cheaper.
     let htmlText = await response.text();
 
     // Parse the HTML text into a document object
@@ -78,35 +89,38 @@ Promise.all([getAPIKey(), getPrompt()]).then(([apiKey, prompt]) => {
     // Get the article element
     const article = doc.querySelector('article');
 
-    // Extract the main article text
-    const mainText = article.textContent;
-
-    // console.log("For previous headling " + headline + ", using main text: " + mainText)
+    var mainText = "";
+    if (Object.prototype.hasOwnProperty.call(article, 'textContent')) {
+      // Extract the main article text
+      mainText = article.textContent;
+    } else {
+      console.log(`No textContent found for headline "${headline.textContent}" at ${headline.href}, rewriting without article content.`);
+      mainText = headline.textContent; // This is a bit of a design choice, but I think it's better than nothing..
+    }
 
     // Generate a new headline with OpenAI API
-    // TODO Completions is a bit outdated, as is text-davinci-003, but probably replacing this with Web LLM soon anyway?
-    const openAIResponse = await fetch('https://api.openai.com/v1/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + apiKey
-      },
-      body: JSON.stringify({
-        model: "text-davinci-003",
-        prompt: prompt + `\n\nArticle: "${mainText}"`,
-        max_tokens: 200
+    // TODO Completions is a bit outdated, as is text-davinci-003 (EOL 1/4/2024), but probably replacing this with Web LLM soon anyway?
+    var postData = {
+      model: "text-davinci-003",
+      prompt: prompt + `\n${mainText}`,
+      max_tokens: 200
+    };
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey
+    };
+    // We could potentially do this concurrently but I'm mildly worried about rate limiting and don't have explicit backoff/retry logic.
+    await axios.post('https://api.openai.com/v1/completions', postData, { headers: headers })
+      .then((response) => {      
+        const generatedHeadline = response.data.choices[0].text.trim().replace(/(\r\n|\n|\r)/gm, ""); // Sometimes you get linebreaks back.
+        // console.log(`Post: ${postData.prompt}\nReponse: ${generatedHeadline}`);
+        console.log((response.cached ? "CACHED: " : "GENERATED: ") + generatedHeadline);
+
+        // Replace the old headline with the new one
+        headline.textContent = generatedHeadline;
       })
-    });
-
-    const openAIData = await openAIResponse.json();
-    const generatedHeadline = openAIData.choices[0].text.trim();
-
-    console.log(generatedHeadline)
-
-    // Replace the old headline with the new one
-    headline.textContent = generatedHeadline;
-
-    // Remove all-caps headlines, just easier to read with summaries.
-    headline.style.cssText = 'text-transform: none !important;'; // TODO Still doesn't really work.
+      .catch((error) => {
+        console.error(error);
+      });
   });
 });
