@@ -8,11 +8,6 @@
         "ecmaVersion": "latest",
         "sourceType": "module"
     },
-    "ignorePatterns": [
-        "config/webpack.common.js",
-        "config/webpack.config.js",
-        "config/paths.js"
-    ],
     "rules": {},
     "globals": {
         "chrome": "writable",
