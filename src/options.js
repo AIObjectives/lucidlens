@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const apiKeyInput = document.getElementById('apiKey');
     const promptInput = document.getElementById('prompt');
+    const headlineRuleInput = document.getElementById('headlineRules');
     const saveButton = document.getElementById('saveOptions');
 
     // Load the saved options when the options page is opened
@@ -14,6 +15,11 @@ document.addEventListener('DOMContentLoaded', function () {
             promptInput.value = data.prompt;
         }
     });
+    chrome.storage.local.get('headlineRules', function (data) {
+        if (data.headlineRules) {
+            headlineRuleInput.value = data.headlineRules;
+        }
+    });
 
     saveButton.addEventListener('click', function () {
         const apiKey = apiKeyInput.value;        
@@ -25,6 +31,12 @@ document.addEventListener('DOMContentLoaded', function () {
         chrome.storage.local.set({ prompt }, function () {
             console.log('Prompt saved successfully.');
         });
+
+        const headlineRules = headlineRuleInput.value;
+        chrome.storage.local.set({ headlineRules }, function () {
+            console.log('Headline rules saved successfully.');
+        });
+
 
         // A little sketchy here showing the success message when one of the saves could have failed.
         // But, it's probably fine.

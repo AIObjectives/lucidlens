@@ -34,7 +34,19 @@ function getPrompt() {
   });
 }
 
-Promise.all([getAPIKey(), getPrompt()]).then(([apiKey, prompt]) => {
+function getHeadlineRules() {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.get('headlineRules', (result) => {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      } else {
+        resolve(result.headlineRules);
+      }
+    });
+  });
+}
+
+Promise.all([getAPIKey(), getPrompt(), getHeadlineRules()]).then(([apiKey, prompt, headlineRules]) => {
 
   if (apiKey === undefined) {
     console.warn('%cLucid Lens: Please set the Open API key in the options.', 'color: red; font-weight: bold;');
@@ -46,38 +58,44 @@ Promise.all([getAPIKey(), getPrompt()]).then(([apiKey, prompt]) => {
     return;
   }
 
+  if (headlineRules === undefined) {
+    console.warn('%cLucid Lens: Please set the Headline Rules in the options.', 'color: red; font-weight: bold;');
+    return;
+  }
+
   console.log('%cLucid Lens: Successfully loaded options.', 'color: green; font-weight: bold;');
 
   // Get the hostname of the current site
   let hostname = window.location.hostname;
 
-  // Define different querySelectorAll rules for different websites
-  let selector;
-  switch (hostname) {
-    case 'www.breitbart.com':
-      selector = 'article.post a[title], a[itemprop="url"], ul#menu-trending li a, section#DQSW ul li a, ul#BBTrendUL li a';
-      break;
-    case 'www.reddit.com':
-      selector = 'a[data-click-id="body"]';
-      break;
-    case 'www.cnn.com':
-      selector = 'a.zone__title-url, ';
-      break;
-    // Add more cases as needed...
-    default:
-      console.log(`No selector defined for hostname: ${hostname}`);
-      return;
+  // Get querySelectorAll rules for different websites
+  const allSelectors = headlineRules.split(/[\r\n]+/);
+  var siteSelectors = [];
+  for (let selector of allSelectors) {
+    if (selector.startsWith(hostname)) {
+      siteSelectors.push(selector.split("##")[1]);
+    }
+  }
+  if (siteSelectors.length != 0) {
+    console.log(`Proceeding with selectors: ${siteSelectors}`);
+  } else {
+    console.log(`No rules found, returning.`);
+    return;
   }
 
   // Now use the selected rule to get the headlines
-  let headlines = document.querySelectorAll(selector);
+  var headlines = [];
+  for (let selector of siteSelectors) {
+    headlines = headlines.concat(Array.from(document.querySelectorAll(selector))); // querySelectorAll returns a NodeList, not exactly an array.
+  }
 
   // Loop through each headline
   headlines.forEach(async (headline) => {
 
     // TODO Need better heuristics for things that are matched by selectors but are not actually headlines. Or need deselectors like adblockers?
-    if (headline.textContent.length < 50) {
-      console.log("Too short, excluded: " + headline)
+
+    if (headline.href === undefined) {
+      console.log("Headline has no valid href, excluded: " + headline.textContent)
       return;
     }
 
@@ -129,7 +147,7 @@ Promise.all([getAPIKey(), getPrompt()]).then(([apiKey, prompt]) => {
         console.log((response.cached ? "CACHED: " : "GENERATED: ") + generatedHeadline);
 
         // Replace the old headline with the new one
-        headline.textContent = generatedHeadline;
+        headline.textContent = "!!!" + generatedHeadline;
       })
       .catch((error) => {
         console.error(error);

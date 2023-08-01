@@ -18,6 +18,14 @@
       value='Be as concise as possible. Give me a single new objective, neutral, factual headline for the article content below.'>
   </p>
   <p>
+    <label for="headlineRules">Headline Rules:</label>
+    <br />
+    <textarea id="headlineRules" rows="20" cols="64" spellcheck="false">
+www.breitbart.com##article.post a[title], a[itemprop="url"], ul#menu-trending li a, section#DQSW ul li a, ul#BBTrendUL li a
+www.cnn.com##a.zone__title-url
+</textarea>
+  </p>
+  <p>
     <button id="saveOptions">Save</button>
   </p>
   <p id="successMessage"></p>
