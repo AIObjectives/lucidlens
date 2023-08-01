@@ -105,6 +105,7 @@ Promise.all([getAPIKey(), getPrompt(), getHeadlineRules()]).then(([apiKey, promp
 
     // Fetch the linked article content
     let response = await axios.get(headline.href);
+    console.log((response.cached ? "CACHED ARTICLE: " : "FETCHED ARTICLE: ") + headline.textContent);
     let htmlText = response.data;
 
     // Parse the HTML text into a document object
@@ -148,7 +149,7 @@ Promise.all([getAPIKey(), getPrompt(), getHeadlineRules()]).then(([apiKey, promp
       .then((response) => {
         const generatedHeadline = response.data.choices[0].text.trim().replace(/(\r\n|\n|\r)/gm, ""); // Sometimes you get linebreaks back.
         // console.log(`Post: ${postData.prompt}\nReponse: ${generatedHeadline}`);
-        console.log((response.cached ? "CACHED: " : "GENERATED: ") + generatedHeadline);
+        console.log((response.cached ? "CACHED HEADLINE: " : "GENERATED HEADLINE: ") + generatedHeadline);
 
         // Replace the old headline with the new one
         headline.textContent = "✨" + generatedHeadline;
