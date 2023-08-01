@@ -93,6 +93,10 @@ Promise.all([getAPIKey(), getPrompt(), getHeadlineRules()]).then(([apiKey, promp
   headlines.forEach(async (headline) => {
 
     // TODO Need better heuristics for things that are matched by selectors but are not actually headlines. Or need deselectors like adblockers?
+    if (headline.href.includes("/author/")) {
+      console.log("Headline is an author link, excluded: " + headline.textContent)
+      return;
+    }
 
     if (headline.href === undefined) {
       console.log("Headline has no valid href, excluded: " + headline.textContent)
