@@ -100,8 +100,8 @@ Promise.all([getAPIKey(), getPrompt(), getHeadlineRules()]).then(([apiKey, promp
     }
 
     // Fetch the linked article content
-    let response = await fetch(headline.href); // TODO We should probably cache these too but they're cheaper.
-    let htmlText = await response.text();
+    let response = await axios.get(headline.href);
+    let htmlText = response.data;
 
     // Parse the HTML text into a document object
     const parser = new DOMParser();
@@ -147,7 +147,7 @@ Promise.all([getAPIKey(), getPrompt(), getHeadlineRules()]).then(([apiKey, promp
         console.log((response.cached ? "CACHED: " : "GENERATED: ") + generatedHeadline);
 
         // Replace the old headline with the new one
-        headline.textContent = "!!!" + generatedHeadline;
+        headline.textContent = "✨" + generatedHeadline;
       })
       .catch((error) => {
         console.error(error);
