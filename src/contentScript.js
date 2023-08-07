@@ -124,7 +124,7 @@ Promise.all([
   if (siteSelectors.length != 0) {
     console.log(`Proceeding with selectors: ${siteSelectors}`);
   } else {
-    console.log(`No rules found, returning.`);
+    console.log(`No rules found starting with ${hostname}, returning.`);
     return;
   }
 
@@ -135,6 +135,8 @@ Promise.all([
       Array.from(document.querySelectorAll(selector))
     ); // querySelectorAll returns a NodeList, not exactly an array.
   }
+
+  console.log(`Found ${headlines.length} headlines.`);
 
   // Loop through each headline
   headlines.forEach(async (headline) => {
@@ -173,7 +175,6 @@ Promise.all([
 
     let mainText = '';
 
-    console.log({ articleExtractionRules });
     const extractionRule = articleExtractionRules
       .split(/[\r\n]+/)
       .find((selector) => selector.startsWith(hostname));
