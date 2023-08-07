@@ -199,11 +199,11 @@ Promise.all([
 
     if (mainText.length > contextWindowMax) {
       mainText =
-        articleText.substring(0, contextWindowMax / 2) +
+        mainText.substring(0, contextWindowMax / 2) +
         ' ... ' +
-        articleText.substring(
-          articleText.length - contextWindowMax / 2,
-          articleText.length
+        mainText.substring(
+          mainText.length - contextWindowMax / 2,
+          mainText.length
         );
       console.log(
         `For headline "${headline.textContent}", trimmed article to ${contextWindowMax} characters.`
