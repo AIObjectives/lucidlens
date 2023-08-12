@@ -28,7 +28,7 @@ You'll know that a headline has been replaced by a generated ones when it starts
 ## Contribution
 
 Suggestions and pull requests are welcomed!
-After changing the recode, visit chrome://extensions and click on the reload button to reload the extension.
+After changing the code, visit chrome://extensions and click on the reload button to reload the extension.
 
 ---
 
