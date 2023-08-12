@@ -1,26 +1,29 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <title>Lucid Lens Options</title>
+  </head>
 
-<head>
-  <title>Lucid Lens Options</title>
-</head>
-
-<body>
-  <h1>Lucid Lens Options</h1>
-  <!-- TODO Really, any formatting at all would be nice here. -->
-  <p>
-    <label for="apiKey">OpenAI API Key:</label>
-    <input type="text" id="apiKey" style="width: 64ch;">
-  </p>
-  <p>
-    <label for="prompt">Prompt:</label>
-    <input type="text" id="prompt" style="width: 64ch;"
-      value='Be as concise as possible. Give me a single new objective, neutral, factual headline for the article content below.'>
-  </p>
-  <p>
-    <label for="headlineRules">Headline Rules:</label>
-    <br />
-    <textarea id="headlineRules" rows="20" cols="64" spellcheck="false">
+  <body>
+    <h1>Lucid Lens Options</h1>
+    <!-- TODO Really, any formatting at all would be nice here. -->
+    <p>
+      <label for="apiKey">OpenAI API Key:</label>
+      <input type="text" id="apiKey" style="width: 64ch" />
+    </p>
+    <p>
+      <label for="prompt">Prompt:</label>
+      <input
+        type="text"
+        id="prompt"
+        style="width: 64ch"
+        value="Be as concise as possible. Give me a single new objective, neutral, factual headline for the article content below."
+      />
+    </p>
+    <p>
+      <label for="headlineRules">Headline Rules:</label>
+      <br />
+      <textarea id="headlineRules" rows="20" cols="64" spellcheck="false">
 www.breitbart.com##article.post a[title]
 www.breitbart.com##a[itemprop="url"]
 www.breitbart.com##ul#menu-trending li a
@@ -28,14 +31,34 @@ www.breitbart.com##section#DQSW ul li a
 www.breitbart.com##ul#BBTrendUL li a
 www.breitbart.com##article > footer > h2 > a
 www.cnn.com##a.zone__title-url
-</textarea>
-  </p>
-  <p>
-    <button id="saveOptions">Save</button>
-  </p>
-  <p id="successMessage"></p>
+edition.cnn.com##span[data-editable="headline"]
+edition.cnn.com##h2[data-editable="title"]
+www.theguardian.com##h3 > span
+www.reuters.com##a[data-testid="Heading"]
+www.foxnews.com##h3 > a
+www.bbc.com##a > h3
+www.bbc.com##a.gs-c-promo-heading > span
+www.aljazeera.com##a> h3.article-card__title
+www.aljazeera.com##h3.fte-article__title > a</textarea
+      >
+    </p>
+    <p>
+      <label for="articleExtractionRules">Article extraction rules:</label>
+      <br />
+      <textarea
+        id="articleExtractionRules"
+        rows="5"
+        cols="64"
+        spellcheck="false"
+      >
+www.aljazeera.com##div.wysiwyg > p</textarea
+      >
+    </p>
+    <p>
+      <button id="saveOptions">Save</button>
+    </p>
+    <p id="successMessage"></p>
 
-  <script src="options.js"></script>
-</body>
-
+    <script src="options.js"></script>
+  </body>
 </html>
