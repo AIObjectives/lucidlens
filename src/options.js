@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', function () {
       console.log('Prompt saved successfully.');
     });
 
+    // TODO If we allow people to edit rules, we may want a way to restore/update default rules (which probably change between releases.)
+    // I just manually delete the rules from local storage but that's not very user friendly.
     const headlineRules = headlineRuleInput.value;
     chrome.storage.local.set({ headlineRules }, function () {
       console.log('Headline rules saved successfully.');
