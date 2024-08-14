@@ -1,5 +1,7 @@
 name: CI
 on: push
+env:
+  ESLINT_USE_FLAT_CONFIG: false
 jobs:
   build:
     runs-on: ubuntu-latest
